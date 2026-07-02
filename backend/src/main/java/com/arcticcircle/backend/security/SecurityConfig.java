@@ -3,6 +3,7 @@ package com.arcticcircle.backend.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -27,17 +28,14 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Public endpoints
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/products/**").permitAll()
-                // Admin only endpoints
-                .requestMatchers("/api/orders").hasRole("ADMIN")
-                .requestMatchers("/api/orders/*/deliver").hasRole("ADMIN")
-                .requestMatchers("/api/tickets").hasRole("ADMIN")
-                .requestMatchers("/api/tickets/*/complete").hasRole("ADMIN")
-                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/products").hasRole("ADMIN")
-                // Customer only endpoints
-                .requestMatchers("/api/orders/my").hasRole("CUSTOMER")
-                .requestMatchers("/api/tickets/my").hasRole("CUSTOMER")
-                // Everything else needs authentication
+                .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+                // Admin only
+                .requestMatchers(HttpMethod.GET, "/api/orders").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/orders/*/deliver").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/tickets").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/tickets/*/complete").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/products").hasRole("ADMIN")
+                // Everything else just needs to be authenticated
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
