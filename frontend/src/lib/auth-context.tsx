@@ -1,8 +1,10 @@
-import { createContext, useContext, useState, useEffect, useLayoutEffect, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import { authApi, usersApi, setToken, clearToken, ApiError, type PublicUser } from "@/lib/api";
 
 export type UserRole = "admin" | "customer";
 
 export type SessionUser = {
+  id: string;
   role: UserRole;
   name: string;
   email: string;
@@ -10,35 +12,36 @@ export type SessionUser = {
   address: string;
 };
 
+type AuthResult = { success: boolean; role?: UserRole; error?: string };
+
 type AuthContextType = {
   user: SessionUser | null;
-  login: (email: string, password: string) => { success: boolean; role?: UserRole; error?: string };
-  signup: (data: { name: string; email: string; phone: string; address: string; password: string }) => { success: boolean; error?: string };
+  login: (email: string, password: string) => Promise<AuthResult>;
+  signup: (data: { name: string; email: string; phone: string; address: string; password: string }) => Promise<AuthResult>;
   logout: () => void;
-  updateProfile: (data: Partial<Pick<SessionUser, "address" | "phone">>) => void;
-  changePassword: (current: string, next: string) => { success: boolean; error?: string };
+  updateProfile: (data: Partial<Pick<SessionUser, "address" | "phone">>) => Promise<AuthResult>;
+  changePassword: (current: string, next: string) => Promise<AuthResult>;
 };
-
-const ADMIN_EMAIL = "admin@arcticcircle.com";
-const ADMIN_PASSWORD = "admin123";
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 const SESSION_KEY = "ac_session";
-const USERS_KEY = "ac_users";
 
-type StoredUser = SessionUser & { password: string };
-
-function loadUsers(): StoredUser[] {
-  try {
-    return JSON.parse(localStorage.getItem(USERS_KEY) ?? "[]");
-  } catch {
-    return [];
-  }
+function toSessionUser(u: PublicUser): SessionUser {
+  return {
+    id: u.id,
+    role: u.role === "ADMIN" ? "admin" : "customer",
+    name: u.name,
+    email: u.email,
+    phone: u.phone ?? "",
+    address: u.address ?? "",
+  };
 }
 
-function saveUsers(users: StoredUser[]) {
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+function errorMessage(err: unknown, fallback: string) {
+  if (err instanceof ApiError) return err.message;
+  if (err instanceof Error) return err.message;
+  return fallback;
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -46,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [hydrated, setHydrated] = useState(false);
 
-  // After mount, read session from sessionStorage (client-only)
+  // After mount, read the persisted session (client-only)
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem(SESSION_KEY);
@@ -61,82 +64,61 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     else sessionStorage.removeItem(SESSION_KEY);
   }, [user, hydrated]);
 
-  const login = (email: string, password: string) => {
-    // Check admin first
-    if (
-      (email.toLowerCase() === ADMIN_EMAIL || email.toLowerCase() === "admin") &&
-      password === ADMIN_PASSWORD
-    ) {
-      const session: SessionUser = {
-        role: "admin",
-        name: "Admin",
-        email: ADMIN_EMAIL,
-        phone: "",
-        address: "",
-      };
+  const login = async (email: string, password: string): Promise<AuthResult> => {
+    try {
+      const { token, user: apiUser } = await authApi.login(email.trim(), password);
+      setToken(token);
+      const session = toSessionUser(apiUser);
       setUser(session);
-      return { success: true, role: "admin" as UserRole };
+      return { success: true, role: session.role };
+    } catch (err) {
+      return { success: false, error: errorMessage(err, "Invalid email or password.") };
     }
+  };
 
-    // Check customer accounts
-    const users = loadUsers();
-    const found = users.find(
-      (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
-    );
-    if (found) {
-      const session: SessionUser = {
-        role: "customer",
-        name: found.name,
-        email: found.email,
-        phone: found.phone,
-        address: found.address,
-      };
+  const signup = async (data: {
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+    password: string;
+  }): Promise<AuthResult> => {
+    try {
+      const { token, user: apiUser } = await authApi.register(data);
+      setToken(token);
+      const session = toSessionUser(apiUser);
       setUser(session);
-      return { success: true, role: "customer" as UserRole };
+      return { success: true, role: session.role };
+    } catch (err) {
+      return { success: false, error: errorMessage(err, "Sign up failed.") };
     }
-
-    return { success: false, error: "Invalid email or password." };
   };
 
-  const signup = (data: { name: string; email: string; phone: string; address: string; password: string }) => {
-    const users = loadUsers();
-    if (users.find((u) => u.email.toLowerCase() === data.email.toLowerCase())) {
-      return { success: false, error: "An account with this email already exists." };
+  const logout = () => {
+    clearToken();
+    setUser(null);
+  };
+
+  const updateProfile = async (data: Partial<Pick<SessionUser, "address" | "phone">>): Promise<AuthResult> => {
+    if (!user) return { success: false, error: "Not logged in." };
+    try {
+      const updated = await usersApi.updateMe(data);
+      setUser(toSessionUser(updated));
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: errorMessage(err, "Could not update profile.") };
     }
-    const newUser: StoredUser = { ...data, role: "customer" };
-    saveUsers([...users, newUser]);
-    const session: SessionUser = {
-      role: "customer",
-      name: data.name,
-      email: data.email,
-      phone: data.phone,
-      address: data.address,
-    };
-    setUser(session);
-    return { success: true };
   };
 
-  const logout = () => setUser(null);
-
-  const updateProfile = (data: Partial<Pick<SessionUser, "address" | "phone">>) => {
-    if (!user) return;
-    const updated = { ...user, ...data };
-    setUser(updated);
-    // Also update in the users store
-    const users = loadUsers();
-    saveUsers(users.map((u) => (u.email === user.email ? { ...u, ...data } : u)));
-  };
-
-  const changePassword = (current: string, next: string) => {
+  const changePassword = async (current: string, next: string): Promise<AuthResult> => {
     if (!user) return { success: false, error: "Not logged in." };
     if (user.role === "admin") return { success: false, error: "Admin password cannot be changed here." };
-    const users = loadUsers();
-    const idx = users.findIndex((u) => u.email === user.email);
-    if (idx === -1) return { success: false, error: "User not found." };
-    if (users[idx].password !== current) return { success: false, error: "Current password is incorrect." };
-    users[idx].password = next;
-    saveUsers(users);
-    return { success: true };
+    try {
+      await usersApi.changePassword(current, next);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: errorMessage(err, "Could not change password.") };
+    }
   };
 
   return (

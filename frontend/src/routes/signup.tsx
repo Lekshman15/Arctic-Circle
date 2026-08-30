@@ -18,7 +18,7 @@ function Signup() {
   const upd = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setF({ ...f, [k]: e.target.value });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     if (f.password.length < 8) {
@@ -26,7 +26,7 @@ function Signup() {
       return;
     }
     setLoading(true);
-    const result = signup(f);
+    const result = await signup(f);
     setLoading(false);
     if (result.success) {
       navigate({ to: "/" });

@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { ORDERS, type Order } from "@/lib/mock-data";
+import { ordersApi, type OrderSummary } from "@/lib/api";
 import { Package, CheckCircle2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
@@ -11,8 +11,6 @@ export const Route = createFileRoute("/admin/orders")({
   component: AdminOrders,
 });
 
-type SimpleOrder = Omit<Order, "status"> & { status: "Placed" | "Delivered" };
-
 function AdminOrders() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -22,21 +20,45 @@ function AdminOrders() {
     else if (user.role !== "admin") navigate({ to: "/" });
   }, [user, navigate]);
 
-  const initOrders: SimpleOrder[] = ORDERS.map((o) => ({
-    ...o,
-    status: o.status === "Completed" ? "Delivered" : "Placed",
-  }));
+  const [orders, setOrders] = useState<OrderSummary[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
-  const [orders, setOrders] = useState<SimpleOrder[]>(initOrders);
+  useEffect(() => {
+    if (!user || user.role !== "admin") return;
+    let cancelled = false;
+    ordersApi
+      .getAll()
+      .then((data) => {
+        if (!cancelled) setOrders(data);
+      })
+      .catch(() => {
+        if (!cancelled) toast.error("Couldn't load orders from the server.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   if (!user || user.role !== "admin") return null;
 
-  const pending = orders.filter((o) => o.status === "Placed");
-  const delivered = orders.filter((o) => o.status === "Delivered");
+  const pending = orders.filter((o) => o.status === "PLACED");
+  const delivered = orders.filter((o) => o.status === "DELIVERED");
 
-  const markDelivered = (id: string) => {
-    setOrders((cur) => cur.map((o) => (o.id === id ? { ...o, status: "Delivered" } : o)));
-    toast.success(`Order ${id} marked as delivered`);
+  const markDelivered = async (id: string) => {
+    setBusyId(id);
+    try {
+      const updated = await ordersApi.markDelivered(id);
+      setOrders((cur) => cur.map((o) => (o.id === id ? updated : o)));
+      toast.success(`Order marked as delivered`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not update the order.");
+    } finally {
+      setBusyId(null);
+    }
   };
 
   return (
@@ -53,23 +75,29 @@ function AdminOrders() {
       </div>
       <p className="mt-1 text-sm text-muted-foreground">{pending.length} pending · {delivered.length} delivered</p>
 
-      <div className="mt-8 space-y-8">
-        <Section title="Pending" count={pending.length} accent="amber">
-          {pending.length === 0 ? (
-            <EmptyState message="No pending orders — all caught up!" />
-          ) : (
-            <OrdersTable orders={pending} onDeliver={markDelivered} />
-          )}
-        </Section>
+      {loading ? (
+        <div className="mt-8 rounded-xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
+          Loading orders…
+        </div>
+      ) : (
+        <div className="mt-8 space-y-8">
+          <Section title="Pending" count={pending.length} accent="amber">
+            {pending.length === 0 ? (
+              <EmptyState message="No pending orders — all caught up!" />
+            ) : (
+              <OrdersTable orders={pending} onDeliver={markDelivered} busyId={busyId} />
+            )}
+          </Section>
 
-        <Section title="Delivered" count={delivered.length} accent="emerald">
-          {delivered.length === 0 ? (
-            <EmptyState message="No delivered orders yet." />
-          ) : (
-            <OrdersTable orders={delivered} />
-          )}
-        </Section>
-      </div>
+          <Section title="Delivered" count={delivered.length} accent="emerald">
+            {delivered.length === 0 ? (
+              <EmptyState message="No delivered orders yet." />
+            ) : (
+              <OrdersTable orders={delivered} />
+            )}
+          </Section>
+        </div>
+      )}
     </div>
   );
 }
@@ -96,37 +124,37 @@ function EmptyState({ message }: { message: string }) {
   );
 }
 
-function OrdersTable({ orders, onDeliver }: { orders: SimpleOrder[]; onDeliver?: (id: string) => void }) {
+function OrdersTable({ orders, onDeliver, busyId }: { orders: OrderSummary[]; onDeliver?: (id: string) => void; busyId?: string | null }) {
   return (
     <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-card-soft">
       <table className="w-full text-sm">
         <thead className="bg-secondary/60 text-left text-xs uppercase tracking-wider text-muted-foreground">
           <tr>
-            <Th>Order ID</Th><Th>Customer</Th><Th>Product</Th><Th>Qty</Th><Th>Total</Th><Th>Date</Th><Th>Status</Th>
+            <Th>Order ID</Th><Th>Customer</Th><Th>Product</Th><Th>Total</Th><Th>Date</Th><Th>Status</Th>
             {onDeliver && <Th>Action</Th>}
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
           {orders.map((o) => (
             <tr key={o.id} className="hover:bg-secondary/30">
-              <Td className="font-medium">{o.id}</Td>
-              <Td>{o.customer}</Td>
-              <Td className="max-w-[200px] truncate">{o.product}</Td>
-              <Td>{o.qty}</Td>
-              <Td>₹{o.total.toLocaleString("en-IN")}</Td>
-              <Td className="text-muted-foreground">{o.placedAt}</Td>
+              <Td className="font-medium">{o.id.slice(0, 8)}</Td>
+              <Td>{o.customer.name}</Td>
+              <Td className="max-w-[200px] truncate">{o.product.brand} {o.product.modelName}</Td>
+              <Td>₹{o.product.price.toLocaleString("en-IN")}</Td>
+              <Td className="text-muted-foreground">{new Date(o.createdAt).toLocaleDateString("en-IN")}</Td>
               <Td>
                 <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                  o.status === "Delivered" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
-                }`}>{o.status}</span>
+                  o.status === "DELIVERED" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
+                }`}>{o.status === "DELIVERED" ? "Delivered" : "Placed"}</span>
               </Td>
               {onDeliver && (
                 <Td>
                   <button
                     onClick={() => onDeliver(o.id)}
-                    className="rounded-md hero-gradient px-3 py-1.5 text-xs font-semibold text-white"
+                    disabled={busyId === o.id}
+                    className="rounded-md hero-gradient px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
                   >
-                    Mark delivered
+                    {busyId === o.id ? "Updating…" : "Mark delivered"}
                   </button>
                 </Td>
               )}

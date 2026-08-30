@@ -1,41 +1,35 @@
-import { AirVent, Refrigerator, WashingMachine, Plug } from "lucide-react";
-import type { Product } from "@/lib/mock-data";
+import { AirVent } from "lucide-react";
+import type { Product } from "@/lib/api";
 
-const iconFor = (c: Product["category"]) => {
-  switch (c) {
-    case "AC": return AirVent;
-    case "Refrigerator": return Refrigerator;
-    case "Washing Machine": return WashingMachine;
-    case "Stabilizer": return Plug;
-  }
-};
+// The backend only sells air conditioners (Split / Window), so the visual
+// treatment is keyed off `type` instead of the old multi-category system.
+const gradFor = (t: Product["type"]) =>
+  t === "WINDOW"
+    ? "linear-gradient(135deg, #e6f0fa 0%, #2d8a9e 100%)"
+    : "linear-gradient(135deg, #cfeef2 0%, #5cbdb9 100%)";
 
-const gradFor = (c: Product["category"]) => {
-  switch (c) {
-    case "AC": return "linear-gradient(135deg, #cfeef2 0%, #5cbdb9 100%)";
-    case "Refrigerator": return "linear-gradient(135deg, #e6f0fa 0%, #2d8a9e 100%)";
-    case "Washing Machine": return "linear-gradient(135deg, #eaf2f8 0%, #1a4a6e 100%)";
-    case "Stabilizer": return "linear-gradient(135deg, #f1f5f9 0%, #0c2340 100%)";
-  }
-};
+const labelFor = (t: Product["type"]) => (t === "WINDOW" ? "Window AC" : "Split AC");
 
 export function ProductImage({ product, size = "md" }: { product: Product; size?: "sm" | "md" | "lg" }) {
-  const Icon = iconFor(product.category);
   const dim = size === "lg" ? "h-72" : size === "sm" ? "h-32" : "h-48";
   return (
     <div
       className={`relative w-full ${dim} overflow-hidden rounded-lg`}
-      style={{ background: gradFor(product.category) }}
+      style={{ background: gradFor(product.type) }}
     >
-      <div className="absolute inset-0 grid place-items-center text-white/85">
-        <Icon className={size === "lg" ? "h-28 w-28" : size === "sm" ? "h-12 w-12" : "h-20 w-20"} strokeWidth={1.25} />
-      </div>
+      {product.imageUrl ? (
+        <img src={product.imageUrl} alt={`${product.brand} ${product.modelName}`} className="absolute inset-0 h-full w-full object-cover" />
+      ) : (
+        <div className="absolute inset-0 grid place-items-center text-white/85">
+          <AirVent className={size === "lg" ? "h-28 w-28" : size === "sm" ? "h-12 w-12" : "h-20 w-20"} strokeWidth={1.25} />
+        </div>
+      )}
       <div className="absolute left-3 top-3 rounded-full bg-white/85 px-2 py-0.5 text-[10px] font-medium text-foreground">
-        {product.category}
+        {labelFor(product.type)}
       </div>
-      {product.energyRating > 0 && (
+      {product.starRating > 0 && (
         <div className="absolute right-3 top-3 rounded-full bg-deep/85 px-2 py-0.5 text-[10px] font-medium text-white">
-          {product.energyRating}★ Energy
+          {product.starRating}★ Energy
         </div>
       )}
     </div>

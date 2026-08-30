@@ -1,8 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { Wrench, Upload, X, AirVent, Refrigerator, WashingMachine, Plug, CheckCircle2, LogIn } from "lucide-react";
+import { Wrench, Upload, X, AirVent, Refrigerator, WashingMachine, CheckCircle2, LogIn } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
+import { ticketsApi, ApiError, type ApplianceType } from "@/lib/api";
 
 export const Route = createFileRoute("/services")({
   head: () => ({
@@ -16,11 +17,10 @@ export const Route = createFileRoute("/services")({
   component: Services,
 });
 
-const machines = [
+const machines: { value: ApplianceType; label: string; icon: typeof AirVent }[] = [
   { value: "AC", label: "Air Conditioner", icon: AirVent },
-  { value: "Refrigerator", label: "Refrigerator", icon: Refrigerator },
-  { value: "Washing Machine", label: "Washing Machine", icon: WashingMachine },
-  { value: "Stabilizer", label: "Stabilizer", icon: Plug },
+  { value: "FRIDGE", label: "Refrigerator", icon: Refrigerator },
+  { value: "WASHING_MACHINE", label: "Washing Machine", icon: WashingMachine },
 ];
 
 type Errors = Partial<Record<"address" | "machine" | "timing", string>>;
@@ -42,12 +42,14 @@ function Services() {
     if (user?.address && !address) setAddress(user.address);
   }, [user]);
 
+  const [submitting, setSubmitting] = useState(false);
+
   const onFiles = (list: FileList | null) => {
     if (!list) return;
     setFiles([...files, ...Array.from(list)].slice(0, 5));
   };
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const er: Errors = {};
     if (!address.trim()) er.address = "Service address is required";
@@ -55,9 +57,23 @@ function Services() {
     if (!timing.trim()) er.timing = "Please enter your preferred visit time";
     setErrors(er);
     if (Object.keys(er).length) return;
-    const ticket = `SR-${Math.floor(2000 + Math.random() * 1000)}`;
-    setDone(ticket);
-    toast.success(`Service request ${ticket} created`);
+
+    setSubmitting(true);
+    try {
+      const ticket = await ticketsApi.raise({
+        appliance: machine as ApplianceType,
+        complaint: description,
+        address,
+        preferredTimings: timing,
+      });
+      setDone(ticket.id);
+      toast.success(`Service request ${ticket.id} created`);
+    } catch (err) {
+      const message = err instanceof ApiError ? err.message : "Could not create the ticket. Please try again.";
+      toast.error(message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const resetForm = () => {
@@ -231,8 +247,8 @@ function Services() {
 
             <div className="mt-6 flex items-center justify-between">
               <p className="text-xs text-muted-foreground">By submitting, you agree to be contacted by Arctic Circle.</p>
-              <button type="submit" className="rounded-md hero-gradient px-6 py-3 text-sm font-semibold text-white shadow-elev-soft">
-                Raise request
+              <button type="submit" disabled={submitting} className="rounded-md hero-gradient px-6 py-3 text-sm font-semibold text-white shadow-elev-soft disabled:opacity-60">
+                {submitting ? "Submitting…" : "Raise request"}
               </button>
             </div>
           </form>

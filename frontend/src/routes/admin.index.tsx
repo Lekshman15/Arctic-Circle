@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Package, Wrench, CheckCircle2, TrendingUp, ShieldCheck, ArrowRight } from "lucide-react";
-import { ORDERS, TICKETS } from "@/lib/mock-data";
+import { ordersApi, ticketsApi } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/admin/")({
@@ -13,17 +13,37 @@ function AdminDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  const [pendingOrders, setPendingOrders] = useState(0);
+  const [deliveredOrders, setDeliveredOrders] = useState(0);
+  const [openTickets, setOpenTickets] = useState(0);
+  const [closedTickets, setClosedTickets] = useState(0);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     if (!user) navigate({ to: "/login" });
     else if (user.role !== "admin") navigate({ to: "/" });
   }, [user, navigate]);
 
-  if (!user || user.role !== "admin") return null;
+  useEffect(() => {
+    if (!user || user.role !== "admin") return;
+    let cancelled = false;
+    Promise.all([ordersApi.getAll(), ticketsApi.getAll()])
+      .then(([orders, tickets]) => {
+        if (cancelled) return;
+        setPendingOrders(orders.filter((o) => o.status !== "DELIVERED").length);
+        setDeliveredOrders(orders.filter((o) => o.status === "DELIVERED").length);
+        setOpenTickets(tickets.filter((t) => t.status !== "COMPLETED").length);
+        setClosedTickets(tickets.filter((t) => t.status === "COMPLETED").length);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
-  const pendingOrders = ORDERS.filter((o) => o.status !== "Completed").length;
-  const deliveredOrders = ORDERS.filter((o) => o.status === "Completed").length;
-  const openTickets = TICKETS.filter((t) => t.status !== "Completed").length;
-  const closedTickets = TICKETS.filter((t) => t.status === "Completed").length;
+  if (!user || user.role !== "admin") return null;
 
   const stats = [
     { icon: Package, label: "Pending orders", value: pendingOrders, color: "text-amber-600" },
@@ -51,7 +71,7 @@ function AdminDashboard() {
               </div>
               <div className="text-xs uppercase tracking-wider text-muted-foreground">{s.label}</div>
             </div>
-            <div className={`mt-4 font-display text-3xl font-semibold ${s.color}`}>{s.value}</div>
+            <div className={`mt-4 font-display text-3xl font-semibold ${s.color}`}>{loading ? "—" : s.value}</div>
           </div>
         ))}
       </div>

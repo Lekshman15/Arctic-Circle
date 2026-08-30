@@ -17,11 +17,11 @@ function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
-    const result = login(email.trim(), pw);
+    const result = await login(email.trim(), pw);
     setLoading(false);
     if (result.success) {
       if (result.role === "admin") {

@@ -103,18 +103,24 @@ function AddressPanel({
 }: {
   address: string;
   phone: string;
-  onSave: (data: { address?: string; phone?: string }) => void;
+  onSave: (data: { address?: string; phone?: string }) => Promise<{ success: boolean; error?: string }>;
 }) {
   const [addr, setAddr] = useState(address);
   const [ph, setPh] = useState(phone);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({ address: addr, phone: ph });
-    setSaved(true);
-    toast.success("Profile updated.");
-    setTimeout(() => setSaved(false), 2500);
+    setError("");
+    const result = await onSave({ address: addr, phone: ph });
+    if (result.success) {
+      setSaved(true);
+      toast.success("Profile updated.");
+      setTimeout(() => setSaved(false), 2500);
+    } else {
+      setError(result.error ?? "Could not update profile.");
+    }
   };
 
   return (
@@ -147,6 +153,9 @@ function AddressPanel({
           />
         </label>
       </div>
+      {error && (
+        <div className="mt-3 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</div>
+      )}
       <div className="mt-6 flex items-center gap-3">
         <button
           type="submit"
@@ -171,7 +180,7 @@ function AddressPanel({
 function PasswordPanel({
   onSave,
 }: {
-  onSave: (current: string, next: string) => { success: boolean; error?: string };
+  onSave: (current: string, next: string) => Promise<{ success: boolean; error?: string }>;
 }) {
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
@@ -179,7 +188,7 @@ function PasswordPanel({
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     if (next.length < 8) {
@@ -190,7 +199,7 @@ function PasswordPanel({
       setError("New passwords don't match.");
       return;
     }
-    const result = onSave(current, next);
+    const result = await onSave(current, next);
     if (result.success) {
       setSaved(true);
       setCurrent("");

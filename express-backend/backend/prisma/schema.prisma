@@ -1,0 +1,88 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "windows", "debian-openssl-3.0.x"]
+}
+
+// Using SQLite for easy local/dev running — zero setup, just a file on disk.
+// Swap back to "postgresql" (and restore the enum types below) for production;
+// see the git history / CONTEXT.md for the original Postgres schema.
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// SQLite has no native enum type, so these are plain Strings. The app code
+// already only ever writes/compares the exact literal values shown below
+// (e.g. "ADMIN", "SPLIT", "PLACED"), so no controller changes were needed —
+// only this schema swap.
+// Role:          "ADMIN" | "CUSTOMER"
+// ProductType:   "SPLIT" | "WINDOW"
+// OrderStatus:   "PLACED" | "DELIVERED"
+// ApplianceType: "AC" | "WASHING_MACHINE" | "FRIDGE"
+// TicketStatus:  "OPEN" | "COMPLETED"
+
+// Single table for both admins and customers, distinguished by role.
+// Simpler than a separate Admin table — one login path, one place to look someone up.
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  phone        String?
+  address      String?
+  role         String   @default("CUSTOMER")
+  createdAt    DateTime @default(now())
+
+  orders  Order[]
+  tickets Ticket[]
+
+  @@map("users")
+}
+
+model Product {
+  id         String   @id @default(uuid())
+  brand      String
+  modelName  String
+  tonnage    Float
+  starRating Int
+  type       String
+  price      Float
+  imageUrl   String?
+  createdAt  DateTime @default(now())
+
+  orders Order[]
+
+  @@map("products")
+}
+
+model Order {
+  id        String   @id @default(uuid())
+  userId    String
+  productId String
+  status    String   @default("PLACED")
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("orders")
+}
+
+model Ticket {
+  id               String   @id @default(uuid())
+  userId           String
+  appliance        String
+  complaint        String
+  address          String
+  preferredTimings String
+  status           String   @default("OPEN")
+  // Post-resolution feedback — only set once the ticket is completed
+  rating           Int?
+  feedback         String?
+  createdAt        DateTime @default(now())
+  completedAt      DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("tickets")
+}

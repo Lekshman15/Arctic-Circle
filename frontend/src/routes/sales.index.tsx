@@ -1,37 +1,67 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search, SlidersHorizontal, Star, X } from "lucide-react";
-import { BRANDS, CATEGORIES, PRODUCTS, type Product } from "@/lib/mock-data";
+import { productsApi, type Product, type ProductType } from "@/lib/api";
 import { ProductImage } from "@/components/product-image";
-import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/sales/")({
   head: () => ({
     meta: [
-      { title: "Shop ACs, Fridges & Appliances — Arctic Circle" },
-      { name: "description", content: "Browse top-brand ACs, refrigerators, washing machines and stabilizers with filters & best prices." },
+      { title: "Shop ACs & Appliances — Arctic Circle" },
+      { name: "description", content: "Browse top-brand air conditioners with filters & best prices." },
       { property: "og:title", content: "Shop Appliances — Arctic Circle" },
       { property: "og:description", content: "Top brands, best prices, free installation." },
     ],
   }),
+  loader: () => productsApi.list(),
   component: Sales,
 });
 
 type Sort = "popular" | "price-asc" | "price-desc" | "rating";
 
+const TYPES: ProductType[] = ["SPLIT", "WINDOW"];
+const typeLabel = (t: ProductType) => (t === "SPLIT" ? "Split AC" : "Window AC");
+
 function Sales() {
+  const initialProducts = Route.useLoaderData();
+  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState("");
 
   const [q, setQ] = useState("");
-  const [cats, setCats] = useState<string[]>([]);
+  const [types, setTypes] = useState<ProductType[]>([]);
   const [brands, setBrands] = useState<string[]>([]);
   const [maxPrice, setMaxPrice] = useState<number>(100000);
   const [sort, setSort] = useState<Sort>("popular");
   const [filtersOpen, setFiltersOpen] = useState(false);
 
+  // Re-fetch if the loader ran with stale data (e.g. client navigation)
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    productsApi
+      .list()
+      .then((data) => {
+        if (!cancelled) setProducts(data);
+      })
+      .catch(() => {
+        if (!cancelled) setLoadError("Couldn't load products from the server. Is the API running?");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const brandOptions = useMemo(() => Array.from(new Set(products.map((p) => p.brand))).sort(), [products]);
+
   const filtered = useMemo(() => {
-    let r = PRODUCTS.filter((p) => {
-      if (q && !(`${p.name} ${p.brand} ${p.category}`.toLowerCase().includes(q.toLowerCase()))) return false;
-      if (cats.length && !cats.includes(p.category)) return false;
+    let r = products.filter((p) => {
+      const name = `${p.brand} ${p.modelName}`;
+      if (q && !name.toLowerCase().includes(q.toLowerCase())) return false;
+      if (types.length && !types.includes(p.type)) return false;
       if (brands.length && !brands.includes(p.brand)) return false;
       if (p.price > maxPrice) return false;
       return true;
@@ -39,16 +69,16 @@ function Sales() {
     switch (sort) {
       case "price-asc": r = [...r].sort((a, b) => a.price - b.price); break;
       case "price-desc": r = [...r].sort((a, b) => b.price - a.price); break;
-      case "rating": r = [...r].sort((a, b) => b.rating - a.rating); break;
+      case "rating": r = [...r].sort((a, b) => b.starRating - a.starRating); break;
     }
     return r;
-  }, [q, cats, brands, maxPrice, sort]);
+  }, [products, q, types, brands, maxPrice, sort]);
 
-  const toggle = (list: string[], setter: (v: string[]) => void, v: string) => {
+  const toggle = <T,>(list: T[], setter: (v: T[]) => void, v: T) => {
     setter(list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
   };
 
-  const clearAll = () => { setCats([]); setBrands([]); setMaxPrice(100000); setQ(""); };
+  const clearAll = () => { setTypes([]); setBrands([]); setMaxPrice(100000); setQ(""); };
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -59,7 +89,7 @@ function Sales() {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search for AC, fridge, brand…"
+            placeholder="Search for AC, brand…"
             className="w-full rounded-lg border border-border bg-card py-2.5 pl-10 pr-3 text-sm shadow-card-soft focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
           />
         </div>
@@ -83,6 +113,10 @@ function Sales() {
         </div>
       </div>
 
+      {loadError && (
+        <div className="mt-4 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">{loadError}</div>
+      )}
+
       <div className="mt-6 grid gap-6 lg:grid-cols-[260px_1fr]">
         {/* Sidebar filters */}
         <aside className={
@@ -95,14 +129,14 @@ function Sales() {
             <button onClick={() => setFiltersOpen(false)} aria-label="Close"><X className="h-5 w-5" /></button>
           </div>
 
-          <FilterGroup title="Category">
-            {CATEGORIES.map((c) => (
-              <Check key={c} label={c} checked={cats.includes(c)} onChange={() => toggle(cats, setCats, c)} />
+          <FilterGroup title="Type">
+            {TYPES.map((t) => (
+              <Check key={t} label={typeLabel(t)} checked={types.includes(t)} onChange={() => toggle(types, setTypes, t)} />
             ))}
           </FilterGroup>
 
           <FilterGroup title="Brand">
-            {BRANDS.map((b) => (
+            {brandOptions.map((b) => (
               <Check key={b} label={b} checked={brands.includes(b)} onChange={() => toggle(brands, setBrands, b)} />
             ))}
           </FilterGroup>
@@ -126,10 +160,14 @@ function Sales() {
         {/* Results */}
         <section>
           <div className="mb-3 text-sm text-muted-foreground">
-            Showing <span className="text-foreground font-medium">{filtered.length}</span> of {PRODUCTS.length} products
+            Showing <span className="text-foreground font-medium">{filtered.length}</span> of {products.length} products
           </div>
 
-          {filtered.length === 0 ? (
+          {loading && products.length === 0 ? (
+            <div className="rounded-xl border border-dashed p-12 text-center text-sm text-muted-foreground">
+              Loading products…
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="rounded-xl border border-dashed p-12 text-center text-sm text-muted-foreground">
               No products match these filters.
             </div>
@@ -163,7 +201,6 @@ function Check({ label, checked, onChange }: { label: string; checked: boolean; 
 }
 
 function ProductCard({ product }: { product: Product }) {
-  const off = Math.round(((product.mrp - product.price) / product.mrp) * 100);
   return (
     <Link
       to="/sales/$productId"
@@ -173,17 +210,15 @@ function ProductCard({ product }: { product: Product }) {
       <ProductImage product={product} />
       <div className="mt-3 flex-1 px-1">
         <div className="text-xs text-muted-foreground">{product.brand}</div>
-        <div className="line-clamp-2 text-sm font-medium group-hover:text-primary">{product.name}</div>
+        <div className="line-clamp-2 text-sm font-medium group-hover:text-primary">{product.modelName}</div>
         <div className="mt-1.5 flex items-center gap-1.5 text-xs">
           <span className="inline-flex items-center gap-0.5 rounded bg-emerald-600/10 px-1.5 py-0.5 font-medium text-emerald-700">
-            {product.rating} <Star className="h-3 w-3 fill-current" />
+            {product.starRating} <Star className="h-3 w-3 fill-current" />
           </span>
-          <span className="text-muted-foreground">({product.reviews.toLocaleString("en-IN")})</span>
+          <span className="text-muted-foreground">{product.tonnage} Ton</span>
         </div>
         <div className="mt-2 flex items-baseline gap-2">
           <span className="text-base font-semibold text-deep">₹{product.price.toLocaleString("en-IN")}</span>
-          <span className="text-xs text-muted-foreground line-through">₹{product.mrp.toLocaleString("en-IN")}</span>
-          <span className="text-xs font-medium text-emerald-700">{off}% off</span>
         </div>
       </div>
     </Link>

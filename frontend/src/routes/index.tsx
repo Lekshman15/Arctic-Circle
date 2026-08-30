@@ -1,22 +1,23 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Wrench, ShieldCheck, Truck, Star, Snowflake } from "lucide-react";
-import { PRODUCTS } from "@/lib/mock-data";
+import { productsApi } from "@/lib/api";
 import { ProductImage } from "@/components/product-image";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Arctic Circle — Trusted ACs, Appliances & Service" },
-      { name: "description", content: "Shop ACs, refrigerators, washing machines & stabilizers. Book expert service in minutes — Arctic Circle." },
+      { name: "description", content: "Shop top-brand air conditioners. Book expert service in minutes — Arctic Circle." },
       { property: "og:title", content: "Arctic Circle — Trusted Cooling & Service" },
       { property: "og:description", content: "Shop top-brand appliances and book expert service in minutes." },
     ],
   }),
+  loader: async () => (await productsApi.list()).slice(0, 4),
   component: Home,
 });
 
 function Home() {
-  const featured = PRODUCTS.slice(0, 4);
+  const featured = Route.useLoaderData();
 
   return (
     <div>
@@ -67,34 +68,38 @@ function Home() {
           </div>
 
           {/* Hero card stack */}
-          <div className="relative hidden lg:block">
-            <div className="absolute right-0 top-4 w-80 rotate-3 rounded-2xl bg-white p-4 shadow-elev-soft">
-              <ProductImage product={featured[0]} size="md" />
-              <div className="mt-3">
-                <div className="text-sm font-semibold">{featured[0].name}</div>
-                <div className="mt-1 text-xs text-muted-foreground">{featured[0].brand} · {featured[0].capacity}</div>
-                <div className="mt-2 text-base font-semibold text-deep">₹{featured[0].price.toLocaleString("en-IN")}</div>
-              </div>
-            </div>
-            <div className="absolute -left-2 top-40 w-72 -rotate-6 rounded-2xl bg-white p-4 shadow-elev-soft">
-              <ProductImage product={featured[3]} size="sm" />
-              <div className="mt-3">
-                <div className="text-sm font-semibold">{featured[3].name}</div>
-                <div className="mt-1 text-xs text-muted-foreground">{featured[3].brand}</div>
-              </div>
-            </div>
-            <div className="absolute right-10 bottom-0 w-64 rotate-1 rounded-2xl bg-white p-3 shadow-elev-soft">
-              <div className="flex items-center gap-3">
-                <div className="grid h-10 w-10 place-items-center rounded-full hero-gradient text-white">
-                  <Wrench className="h-5 w-5" />
-                </div>
-                <div>
-                  <div className="text-sm font-semibold">Service in 24h</div>
-                  <div className="text-xs text-muted-foreground">Avg. response time</div>
+          {featured.length > 0 && (
+            <div className="relative hidden lg:block">
+              <div className="absolute right-0 top-4 w-80 rotate-3 rounded-2xl bg-white p-4 shadow-elev-soft">
+                <ProductImage product={featured[0]} size="md" />
+                <div className="mt-3">
+                  <div className="text-sm font-semibold">{featured[0].modelName}</div>
+                  <div className="mt-1 text-xs text-muted-foreground">{featured[0].brand} · {featured[0].tonnage} Ton</div>
+                  <div className="mt-2 text-base font-semibold text-deep">₹{featured[0].price.toLocaleString("en-IN")}</div>
                 </div>
               </div>
+              {featured[3] && (
+                <div className="absolute -left-2 top-40 w-72 -rotate-6 rounded-2xl bg-white p-4 shadow-elev-soft">
+                  <ProductImage product={featured[3]} size="sm" />
+                  <div className="mt-3">
+                    <div className="text-sm font-semibold">{featured[3].modelName}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">{featured[3].brand}</div>
+                  </div>
+                </div>
+              )}
+              <div className="absolute right-10 bottom-0 w-64 rotate-1 rounded-2xl bg-white p-3 shadow-elev-soft">
+                <div className="flex items-center gap-3">
+                  <div className="grid h-10 w-10 place-items-center rounded-full hero-gradient text-white">
+                    <Wrench className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold">Service in 24h</div>
+                    <div className="text-xs text-muted-foreground">Avg. response time</div>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </section>
 
@@ -134,10 +139,9 @@ function Home() {
               <ProductImage product={p} size="md" />
               <div className="mt-3 px-1">
                 <div className="text-xs text-muted-foreground">{p.brand}</div>
-                <div className="line-clamp-2 text-sm font-medium group-hover:text-primary">{p.name}</div>
+                <div className="line-clamp-2 text-sm font-medium group-hover:text-primary">{p.modelName}</div>
                 <div className="mt-2 flex items-baseline gap-2">
                   <span className="text-base font-semibold text-deep">₹{p.price.toLocaleString("en-IN")}</span>
-                  <span className="text-xs text-muted-foreground line-through">₹{p.mrp.toLocaleString("en-IN")}</span>
                 </div>
               </div>
             </Link>
