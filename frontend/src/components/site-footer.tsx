@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Snowflake, Phone, Mail, MapPin } from "lucide-react";
+import { Phone, Mail, MapPin } from "lucide-react";
 
 export function SiteFooter() {
   return (
@@ -7,13 +7,13 @@ export function SiteFooter() {
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-4 lg:px-8">
         <div>
           <div className="flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-md hero-gradient text-white">
-              <Snowflake className="h-4 w-4" />
+            <span className="grid h-8 w-8 place-items-center overflow-hidden rounded-md bg-white">
+              <img src="/logoF.jpg" alt="Arctic Circle logo" className="h-full w-full object-contain" />
             </span>
             <span className="font-display text-base font-semibold">Arctic Circle</span>
           </div>
           <p className="mt-3 text-sm text-muted-foreground max-w-xs">
-            Sales & expert service for ACs, refrigerators, washing machines and stabilizers — trusted since 2008.
+            Sales & expert service for air conditioners and stabilizers — serving customers since 1993.
           </p>
         </div>
 
@@ -21,9 +21,8 @@ export function SiteFooter() {
           <h4 className="text-sm font-semibold">Shop</h4>
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
             <li><Link to="/sales" className="hover:text-foreground">Air Conditioners</Link></li>
-            <li><Link to="/sales" className="hover:text-foreground">Refrigerators</Link></li>
-            <li><Link to="/sales" className="hover:text-foreground">Washing Machines</Link></li>
             <li><Link to="/sales" className="hover:text-foreground">Stabilizers</Link></li>
+            <li><Link to="/contact" className="hover:text-foreground">Second-hand ACs</Link></li>
           </ul>
         </div>
 
@@ -39,16 +38,16 @@ export function SiteFooter() {
         <div>
           <h4 className="text-sm font-semibold">Reach us</h4>
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-            <li className="flex items-start gap-2"><Phone className="h-4 w-4 mt-0.5" /> +91 98xxx 00000</li>
-            <li className="flex items-start gap-2"><Mail className="h-4 w-4 mt-0.5" /> hello@arcticcircle.in</li>
-            <li className="flex items-start gap-2"><MapPin className="h-4 w-4 mt-0.5" /> Shop No. 12, Main Road, India</li>
+            <li className="flex items-start gap-2"><Phone className="h-4 w-4 mt-0.5" /> +91 98412 88528</li>
+            <li className="flex items-start gap-2"><Mail className="h-4 w-4 mt-0.5" /> sridhararctic@gmail.com</li>
+            <li className="flex items-start gap-2"><MapPin className="h-4 w-4 mt-0.5" /> 61/32, Ponnambalam Salai, K. K. Nagar, Chennai - 600078</li>
           </ul>
         </div>
       </div>
       <div className="border-t border-border">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 text-xs text-muted-foreground sm:px-6 lg:px-8">
           <span>© {new Date().getFullYear()} Arctic Circle. All rights reserved.</span>
-          <span>UI design draft — for client review</span>
+          <span>ACs & Stabilizers · Sales & Service</span>
         </div>
       </div>
     </footer>

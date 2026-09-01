@@ -35,7 +35,7 @@ export const Route = createFileRoute("/sales/$productId")({
   component: ProductDetail,
 });
 
-const typeLabel = (t: Product["type"]) => (t === "WINDOW" ? "Window AC" : "Split AC");
+const typeLabel = (t: Product["type"]) => t === "WINDOW" ? "Window AC" : t === "STABILIZER" ? "Stabilizer" : "Split AC";
 
 function ProductDetail() {
   const product = Route.useLoaderData();
@@ -105,8 +105,12 @@ function ProductDetail() {
             <span className="inline-flex items-center gap-1 rounded bg-emerald-600/10 px-2 py-0.5 font-medium text-emerald-700">
               {product.starRating} <Star className="h-3.5 w-3.5 fill-current" />
             </span>
-            <span className="text-muted-foreground">·</span>
-            <span className="text-muted-foreground">{product.tonnage} Ton</span>
+            {product.type !== "STABILIZER" && (
+              <>
+                <span className="text-muted-foreground">·</span>
+                <span className="text-muted-foreground">{product.tonnage} Ton</span>
+              </>
+            )}
             <span className="text-muted-foreground">·</span>
             <span className="text-muted-foreground">{typeLabel(product.type)}</span>
           </div>
@@ -117,8 +121,10 @@ function ProductDetail() {
           <div className="text-xs text-muted-foreground">Inclusive of all taxes · Free installation</div>
 
           <p className="mt-6 text-sm leading-relaxed text-muted-foreground">
-            {product.tonnage} Ton {typeLabel(product.type).toLowerCase()} from {product.brand}, rated {product.starRating} star
-            for energy efficiency. Backed by full brand warranty and free installation.
+            {product.type === "STABILIZER"
+              ? `${product.brand} ${typeLabel(product.type).toLowerCase()} for dependable voltage protection.`
+              : `${product.tonnage} Ton ${typeLabel(product.type).toLowerCase()} from ${product.brand}, rated ${product.starRating} star for energy efficiency.`}
+            {" "}Backed by reliable product support and professional service.
           </p>
 
           <div className="mt-7 flex flex-wrap gap-3">

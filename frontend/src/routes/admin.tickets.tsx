@@ -11,7 +11,7 @@ export const Route = createFileRoute("/admin/tickets")({
 });
 
 const applianceLabel = (a: TicketSummary["appliance"]) =>
-  a === "WASHING_MACHINE" ? "Washing Machine" : a === "FRIDGE" ? "Refrigerator" : "Air Conditioner";
+  a === "STABILIZER" ? "Stabilizer" : a === "WASHING_MACHINE" ? "Washing Machine" : a === "FRIDGE" ? "Refrigerator" : "Air Conditioner";
 
 function AdminTickets() {
   const { user } = useAuth();

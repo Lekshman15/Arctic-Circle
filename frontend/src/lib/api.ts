@@ -71,7 +71,7 @@ export type PublicUser = {
 
 export type AuthResponse = { token: string; user: PublicUser };
 
-export type ProductType = "SPLIT" | "WINDOW";
+export type ProductType = "SPLIT" | "WINDOW" | "STABILIZER";
 
 export type Product = {
   id: string;
@@ -95,7 +95,7 @@ export type OrderSummary = {
   product: { id: string; brand: string; modelName: string; price: number };
 };
 
-export type ApplianceType = "AC" | "WASHING_MACHINE" | "FRIDGE";
+export type ApplianceType = "AC" | "STABILIZER" | "WASHING_MACHINE" | "FRIDGE";
 export type TicketStatus = "OPEN" | "COMPLETED";
 
 export type TicketSummary = {
@@ -142,7 +142,7 @@ export const usersApi = {
 
 // ---------- Products ----------
 
-export type ProductSort = "cost-asc" | "cost-desc" | "rating-desc" | "tonnage" | "brand";
+export type ProductSort = "cost-asc" | "cost-desc" | "rating-desc" | "tonnage-asc" | "tonnage-desc" | "brand";
 
 export const productsApi = {
   list(params?: { brand?: string; type?: ProductType; sort?: ProductSort }) {

@@ -17,10 +17,10 @@ export const Route = createFileRoute("/sales/")({
   component: Sales,
 });
 
-type Sort = "popular" | "price-asc" | "price-desc" | "rating";
+type Sort = "popular" | "price-asc" | "price-desc" | "rating" | "tonnage-asc" | "tonnage-desc";
 
-const TYPES: ProductType[] = ["SPLIT", "WINDOW"];
-const typeLabel = (t: ProductType) => (t === "SPLIT" ? "Split AC" : "Window AC");
+const TYPES: ProductType[] = ["SPLIT", "WINDOW", "STABILIZER"];
+const typeLabel = (t: ProductType) => t === "SPLIT" ? "Split AC" : t === "WINDOW" ? "Window AC" : "Stabilizer";
 
 function Sales() {
   const initialProducts = Route.useLoaderData();
@@ -70,6 +70,16 @@ function Sales() {
       case "price-asc": r = [...r].sort((a, b) => a.price - b.price); break;
       case "price-desc": r = [...r].sort((a, b) => b.price - a.price); break;
       case "rating": r = [...r].sort((a, b) => b.starRating - a.starRating); break;
+      case "tonnage-asc": r = [...r].sort((a, b) => {
+        if (a.type === "STABILIZER" && b.type !== "STABILIZER") return 1;
+        if (a.type !== "STABILIZER" && b.type === "STABILIZER") return -1;
+        return a.tonnage - b.tonnage;
+      }); break;
+      case "tonnage-desc": r = [...r].sort((a, b) => {
+        if (a.type === "STABILIZER" && b.type !== "STABILIZER") return 1;
+        if (a.type !== "STABILIZER" && b.type === "STABILIZER") return -1;
+        return b.tonnage - a.tonnage;
+      }); break;
     }
     return r;
   }, [products, q, types, brands, maxPrice, sort]);
@@ -82,6 +92,14 @@ function Sales() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mb-7">
+        <h1 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">ACs & Stabilizers</h1>
+        <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
+          Air conditioners from O-General, Mitsubishi Electric, Daikin, Voltas, Carrier, Blue Star, Panasonic and Hitachi.
+          Stabilizers are available from Vortex and V-Guard. ACs are available from 0.5 to 3 tons.
+        </p>
+      </div>
+
       {/* Search bar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
@@ -89,7 +107,7 @@ function Sales() {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search for AC, brand…"
+            placeholder="Search for AC, stabilizer or brand…"
             className="w-full rounded-lg border border-border bg-card py-2.5 pl-10 pr-3 text-sm shadow-card-soft focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
           />
         </div>
@@ -109,6 +127,8 @@ function Sales() {
             <option value="price-asc">Price: Low to High</option>
             <option value="price-desc">Price: High to Low</option>
             <option value="rating">Avg. Rating</option>
+            <option value="tonnage-asc">Tonnage: Low to High</option>
+            <option value="tonnage-desc">Tonnage: High to Low</option>
           </select>
         </div>
       </div>
@@ -157,26 +177,48 @@ function Sales() {
           <button onClick={clearAll} className="mt-4 text-xs font-medium text-primary hover:underline">Clear all filters</button>
         </aside>
 
-        {/* Results */}
-        <section>
-          <div className="mb-3 text-sm text-muted-foreground">
-            Showing <span className="text-foreground font-medium">{filtered.length}</span> of {products.length} products
+        {/* Right column: banner + results, kept together so grid auto-placement
+            doesn't shove the results section back under the sidebar column */}
+        <div className="flex flex-col gap-6">
+          {/* Second-hand AC enquiry */}
+          <div className="rounded-xl border border-primary/20 bg-secondary/50 p-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="font-display text-lg font-semibold">Looking for a second-hand AC?</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  We also sell 2nd-hand ACs. Contact us to enquire about current availability.
+                </p>
+              </div>
+              <Link
+                to="/contact"
+                className="inline-flex shrink-0 items-center justify-center rounded-md hero-gradient px-5 py-2.5 text-sm font-semibold text-white"
+              >
+                Enquire now
+              </Link>
+            </div>
           </div>
 
-          {loading && products.length === 0 ? (
-            <div className="rounded-xl border border-dashed p-12 text-center text-sm text-muted-foreground">
-              Loading products…
+          {/* Results */}
+          <section>
+            <div className="mb-3 text-sm text-muted-foreground">
+              Showing <span className="text-foreground font-medium">{filtered.length}</span> of {products.length} products
             </div>
-          ) : filtered.length === 0 ? (
-            <div className="rounded-xl border border-dashed p-12 text-center text-sm text-muted-foreground">
-              No products match these filters.
-            </div>
-          ) : (
-            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-              {filtered.map((p) => <ProductCard key={p.id} product={p} />)}
-            </div>
-          )}
-        </section>
+
+            {loading && products.length === 0 ? (
+              <div className="rounded-xl border border-dashed p-12 text-center text-sm text-muted-foreground">
+                Loading products…
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="rounded-xl border border-dashed p-12 text-center text-sm text-muted-foreground">
+                No products match these filters.
+              </div>
+            ) : (
+              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                {filtered.map((p) => <ProductCard key={p.id} product={p} />)}
+              </div>
+            )}
+          </section>
+        </div>
       </div>
     </div>
   );

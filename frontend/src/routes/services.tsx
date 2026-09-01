@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { Wrench, Upload, X, AirVent, Refrigerator, WashingMachine, CheckCircle2, LogIn } from "lucide-react";
+import { Wrench, Upload, X, AirVent, ShieldCheck, CheckCircle2, LogIn, type LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { ticketsApi, ApiError, type ApplianceType } from "@/lib/api";
@@ -9,18 +9,17 @@ export const Route = createFileRoute("/services")({
   head: () => ({
     meta: [
       { title: "Book a Service — Arctic Circle" },
-      { name: "description", content: "Raise a service request for ACs, fridges, washing machines and stabilizers. Same-day technician visits." },
+      { name: "description", content: "Raise a service request for ACs and stabilizers. Get dependable technical support from Arctic Circle." },
       { property: "og:title", content: "Book a Service — Arctic Circle" },
-      { property: "og:description", content: "Same-day technicians for ACs, fridges, washers and stabilizers." },
+      { property: "og:description", content: "Reliable service support for ACs and stabilizers." },
     ],
   }),
   component: Services,
 });
 
-const machines: { value: ApplianceType; label: string; icon: typeof AirVent }[] = [
+const machines: { value: ApplianceType; label: string; icon: LucideIcon }[] = [
   { value: "AC", label: "Air Conditioner", icon: AirVent },
-  { value: "FRIDGE", label: "Refrigerator", icon: Refrigerator },
-  { value: "WASHING_MACHINE", label: "Washing Machine", icon: WashingMachine },
+  { value: "STABILIZER" as ApplianceType, label: "Stabilizer", icon: ShieldCheck },
 ];
 
 type Errors = Partial<Record<"address" | "machine" | "timing", string>>;
@@ -151,7 +150,7 @@ function Services() {
             Tell us what's wrong — we'll send a technician.
           </h1>
           <p className="mt-3 max-w-xl text-muted-foreground">
-            Repairs for ACs, refrigerators, washing machines and stabilizers. Genuine spares and 30-day service warranty on every job.
+            Service support for ACs and stabilizers, with practical technical guidance and reliable after-sales care.
           </p>
 
           {/* Customer info read-only */}

@@ -16,9 +16,9 @@ datasource db {
 // (e.g. "ADMIN", "SPLIT", "PLACED"), so no controller changes were needed —
 // only this schema swap.
 // Role:          "ADMIN" | "CUSTOMER"
-// ProductType:   "SPLIT" | "WINDOW"
+// ProductType:   "SPLIT" | "WINDOW" | "STABILIZER"
 // OrderStatus:   "PLACED" | "DELIVERED"
-// ApplianceType: "AC" | "WASHING_MACHINE" | "FRIDGE"
+// ApplianceType: "AC" | "STABILIZER" | "WASHING_MACHINE" | "FRIDGE"
 // TicketStatus:  "OPEN" | "COMPLETED"
 
 // Single table for both admins and customers, distinguished by role.

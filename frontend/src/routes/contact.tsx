@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Phone, Mail, MapPin, Clock, MessageCircle } from "lucide-react";
+import { Phone, Mail, MapPin, MessageCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -28,18 +28,17 @@ function Contact() {
       <div className="max-w-2xl">
         <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">Let's talk.</h1>
         <p className="mt-3 text-muted-foreground">
-          Questions about a product, your warranty, or need to schedule a service visit? We're happy to help.
+          Questions about an AC, stabilizer, second-hand AC availability, or a service request? We're happy to help.
         </p>
       </div>
 
       <div className="mt-12 grid gap-10 lg:grid-cols-[1fr_1.1fr]">
         <div className="space-y-4">
           {[
-            { icon: Phone, title: "Call us", body: "+91 98xxx 00000", sub: "Mon–Sat, 9am–8pm" },
-            { icon: MessageCircle, title: "WhatsApp", body: "+91 98xxx 00000", sub: "Fastest for service queries" },
-            { icon: Mail, title: "Email", body: "hello@arcticcircle.in", sub: "We reply within a day" },
-            { icon: MapPin, title: "Showroom", body: "Shop No. 12, Main Road", sub: "Hyderabad, Telangana 500001" },
-            { icon: Clock, title: "Hours", body: "Mon–Sat: 9am – 8pm", sub: "Sun: 10am – 4pm" },
+            { icon: Phone, title: "Call us", body: "+91 98412 88528 / +91 89251 83042", sub: "Sales & service enquiries" },
+            { icon: MessageCircle, title: "WhatsApp", body: "+91 98412 88528", sub: "Sales, service & second-hand AC enquiries" },
+            { icon: Mail, title: "Email", body: "sridhararctic@gmail.com", sub: "For sales, service and product enquiries" },
+            { icon: MapPin, title: "Showroom", body: "61/32, Ponnambalam Salai, K. K. Nagar, Chennai - 600078", sub: "Visit us for ACs and stabilizers" },
           ].map((c) => (
             <div key={c.title} className="flex items-start gap-4 rounded-xl border border-border bg-card p-5 shadow-card-soft">
               <div className="grid h-11 w-11 shrink-0 place-items-center rounded-lg hero-gradient text-white">
@@ -52,6 +51,14 @@ function Contact() {
               </div>
             </div>
           ))}
+          <div className="grid gap-2 sm:grid-cols-2">
+            <a href="tel:+919841288528" className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium hover:bg-secondary">
+              <Phone className="h-4 w-4" /> Call +91 98412 88528
+            </a>
+            <a href="https://wa.me/919841288528" className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium hover:bg-secondary" target="_blank" rel="noreferrer">
+              <MessageCircle className="h-4 w-4" /> WhatsApp us
+            </a>
+          </div>
         </div>
 
         <form onSubmit={submit} className="rounded-2xl border border-border bg-card p-6 shadow-card-soft">

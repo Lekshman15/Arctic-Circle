@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
 
 const customerNavItems = [
+  { to: "/", label: "Home", icon: Snowflake },
   { to: "/sales", label: "Sales", icon: ShoppingCart },
   { to: "/services", label: "Services", icon: Wrench },
   { to: "/about", label: "About", icon: Snowflake },
@@ -50,8 +51,8 @@ export function SiteHeader() {
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link to={isAdmin ? "/admin" : "/"} className="flex items-center gap-2 group">
-          <span className="grid h-9 w-9 place-items-center rounded-lg hero-gradient text-white shadow-elev-soft transition-transform group-hover:scale-105">
-            <Snowflake className="h-5 w-5" />
+          <span className="grid h-9 w-9 place-items-center overflow-hidden rounded-lg bg-white shadow-elev-soft transition-transform group-hover:scale-105">
+            <img src="/logoF.jpg" alt="Arctic Circle logo" className="h-full w-full object-contain" />
           </span>
           <div className="leading-tight">
             <div className="font-display text-lg font-semibold tracking-tight">Arctic Circle</div>

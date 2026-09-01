@@ -6,10 +6,10 @@ import { ProductImage } from "@/components/product-image";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Arctic Circle — Trusted ACs, Appliances & Service" },
-      { name: "description", content: "Shop top-brand air conditioners. Book expert service in minutes — Arctic Circle." },
+      { title: "Arctic Circle — ACs, Stabilizers & Service" },
+      { name: "description", content: "Shop top-brand air conditioners and stabilizers. Book expert service in minutes — Arctic Circle." },
       { property: "og:title", content: "Arctic Circle — Trusted Cooling & Service" },
-      { property: "og:description", content: "Shop top-brand appliances and book expert service in minutes." },
+      { property: "og:description", content: "Shop top-brand ACs and stabilizers and book expert service in minutes." },
     ],
   }),
   loader: async () => (await productsApi.list()).slice(0, 4),
@@ -34,7 +34,7 @@ function Home() {
               Cooling appliances & expert service, in one place.
             </h1>
             <p className="mt-5 max-w-xl text-base text-white/85 sm:text-lg">
-              Arctic Circle has powered comfortable homes for 17 years. Buy top-brand ACs, fridges and washers — and book trusted servicing with one tap.
+              Arctic Circle has been serving customers since 1993. Buy top-brand ACs and stabilizers, or book trusted service with one tap.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
@@ -54,11 +54,11 @@ function Home() {
             <dl className="mt-10 grid max-w-md grid-cols-3 gap-6 text-white">
               <div>
                 <dt className="text-xs uppercase tracking-wider text-white/70">Years</dt>
-                <dd className="mt-1 text-2xl font-semibold">17+</dd>
+                <dd className="mt-1 text-2xl font-semibold">33+</dd>
               </div>
               <div>
-                <dt className="text-xs uppercase tracking-wider text-white/70">Installs</dt>
-                <dd className="mt-1 text-2xl font-semibold">12k+</dd>
+                <dt className="text-xs uppercase tracking-wider text-white/70">Customers</dt>
+                <dd className="mt-1 text-2xl font-semibold">25k+</dd>
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-wider text-white/70">Rating</dt>
@@ -108,7 +108,7 @@ function Home() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
             { icon: ShieldCheck, title: "Authorized stock", body: "Genuine units with full brand warranty." },
-            { icon: Truck, title: "Free installation", body: "On all ACs & large appliances within city." },
+            { icon: Truck, title: "Professional installation", body: "On AC installations within the city." },
             { icon: Wrench, title: "In-house service", body: "Trained technicians, original spares." },
             { icon: Star, title: "Loved locally", body: "4.8★ rating from 2,000+ customers." },
           ].map((v) => (
@@ -128,7 +128,7 @@ function Home() {
         <div className="flex items-end justify-between">
           <div>
             <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">Featured this week</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Best-selling appliances at our shop.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Popular ACs and stabilizers available at our shop.</p>
           </div>
           <Link to="/sales" className="hidden text-sm font-medium text-primary hover:underline sm:inline">View all →</Link>
         </div>
@@ -155,7 +155,7 @@ function Home() {
           <div className="grid items-center gap-6 lg:grid-cols-2">
             <div>
               <h3 className="font-display text-2xl font-semibold sm:text-3xl">Appliance acting up? We've got you.</h3>
-              <p className="mt-2 max-w-lg text-white/85">From weak cooling to noisy drums — raise a ticket in under a minute. Our technician will reach you the same day.</p>
+              <p className="mt-2 max-w-lg text-white/85">From weak cooling to voltage issues — raise a service request in under a minute. Our technician will get back to you promptly.</p>
             </div>
             <div className="flex flex-wrap gap-3 lg:justify-end">
               <Link to="/services" className="inline-flex items-center gap-2 rounded-md bg-white px-5 py-3 text-sm font-semibold text-deep">
