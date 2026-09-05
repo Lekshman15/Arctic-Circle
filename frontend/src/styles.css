@@ -43,32 +43,32 @@
 :root {
   --radius: 0.75rem;
 
-  /* Cool Trust palette */
-  --deep: oklch(0.25 0.06 240);          /* #0c2340 */
-  --primary: oklch(0.42 0.08 230);        /* #1a4a6e */
-  --primary-foreground: oklch(0.98 0.005 240);
-  --ice: oklch(0.62 0.10 210);            /* #2d8a9e */
-  --frost: oklch(0.80 0.08 195);          /* #5cbdb9 */
+  /* Logo palette (polar bear crossing sign) */
+  --deep: oklch(0.27 0.10 259);           /* #012257 - logo navy */
+  --primary: oklch(0.35 0.13 256);        /* deeper brand blue for buttons/links */
+  --primary-foreground: oklch(0.98 0.005 250);
+  --ice: oklch(0.68 0.17 248);            /* #259cfa - logo bright blue */
+  --frost: oklch(0.86 0.07 235);          /* light tint of logo blue */
 
-  --background: oklch(0.99 0.003 230);
-  --foreground: oklch(0.20 0.04 240);
+  --background: oklch(0.99 0.003 250);
+  --foreground: oklch(0.20 0.05 255);
 
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.20 0.04 240);
+  --card-foreground: oklch(0.20 0.05 255);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.20 0.04 240);
+  --popover-foreground: oklch(0.20 0.05 255);
 
-  --secondary: oklch(0.96 0.015 220);
-  --secondary-foreground: oklch(0.25 0.06 240);
-  --muted: oklch(0.96 0.012 220);
-  --muted-foreground: oklch(0.50 0.03 235);
-  --accent: oklch(0.93 0.04 200);
-  --accent-foreground: oklch(0.25 0.06 240);
+  --secondary: oklch(0.95 0.02 245);
+  --secondary-foreground: oklch(0.27 0.10 259);
+  --muted: oklch(0.95 0.015 245);
+  --muted-foreground: oklch(0.50 0.04 250);
+  --accent: oklch(0.90 0.06 245);
+  --accent-foreground: oklch(0.27 0.10 259);
   --destructive: oklch(0.58 0.22 27);
-  --destructive-foreground: oklch(0.98 0.005 240);
-  --border: oklch(0.91 0.015 220);
-  --input: oklch(0.91 0.015 220);
-  --ring: oklch(0.62 0.10 210);
+  --destructive-foreground: oklch(0.98 0.005 250);
+  --border: oklch(0.90 0.02 245);
+  --input: oklch(0.90 0.02 245);
+  --ring: oklch(0.68 0.17 248);
 
   --gradient-hero: linear-gradient(135deg, var(--deep) 0%, var(--primary) 55%, var(--ice) 100%);
   --gradient-frost: linear-gradient(180deg, color-mix(in oklab, var(--frost) 25%, transparent), transparent);
@@ -77,23 +77,23 @@
 }
 
 .dark {
-  --background: oklch(0.16 0.03 240);
-  --foreground: oklch(0.96 0.01 220);
-  --card: oklch(0.20 0.04 240);
-  --card-foreground: oklch(0.96 0.01 220);
-  --popover: oklch(0.20 0.04 240);
-  --popover-foreground: oklch(0.96 0.01 220);
-  --primary: oklch(0.62 0.10 210);
-  --primary-foreground: oklch(0.16 0.03 240);
-  --secondary: oklch(0.26 0.04 240);
-  --secondary-foreground: oklch(0.96 0.01 220);
-  --muted: oklch(0.26 0.04 240);
-  --muted-foreground: oklch(0.72 0.03 220);
-  --accent: oklch(0.30 0.05 230);
-  --accent-foreground: oklch(0.96 0.01 220);
+  --background: oklch(0.16 0.04 255);
+  --foreground: oklch(0.96 0.01 245);
+  --card: oklch(0.20 0.05 255);
+  --card-foreground: oklch(0.96 0.01 245);
+  --popover: oklch(0.20 0.05 255);
+  --popover-foreground: oklch(0.96 0.01 245);
+  --primary: oklch(0.68 0.17 248);
+  --primary-foreground: oklch(0.16 0.04 255);
+  --secondary: oklch(0.26 0.05 255);
+  --secondary-foreground: oklch(0.96 0.01 245);
+  --muted: oklch(0.26 0.05 255);
+  --muted-foreground: oklch(0.72 0.04 245);
+  --accent: oklch(0.32 0.07 250);
+  --accent-foreground: oklch(0.96 0.01 245);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.62 0.10 210);
+  --ring: oklch(0.68 0.17 248);
 }
 
 @layer base {

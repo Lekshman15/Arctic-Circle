@@ -4,10 +4,10 @@ import type { Product } from "@/lib/api";
 // Product visuals are keyed off the catalog type. Stabilizers use a dedicated protection icon.
 const gradFor = (t: Product["type"]) =>
   t === "STABILIZER"
-    ? "linear-gradient(135deg, #e9f7ff 0%, #3b82f6 100%)"
+    ? "linear-gradient(135deg, #e9f7ff 0%, #259cfa 100%)"
     : t === "WINDOW"
-      ? "linear-gradient(135deg, #e6f0fa 0%, #2d8a9e 100%)"
-      : "linear-gradient(135deg, #cfeef2 0%, #5cbdb9 100%)";
+      ? "linear-gradient(135deg, #e6f0fa 0%, #145a94 100%)"
+      : "linear-gradient(135deg, #cfeef2 0%, #012257 100%)";
 
 const labelFor = (t: Product["type"]) =>
   t === "STABILIZER" ? "Stabilizer" : t === "WINDOW" ? "Window AC" : "Split AC";
