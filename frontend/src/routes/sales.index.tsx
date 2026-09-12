@@ -257,7 +257,9 @@ function ProductCard({ product }: { product: Product }) {
           <span className="inline-flex items-center gap-0.5 rounded bg-emerald-600/10 px-1.5 py-0.5 font-medium text-emerald-700">
             {product.starRating} <Star className="h-3 w-3 fill-current" />
           </span>
-          <span className="text-muted-foreground">{product.tonnage} Ton</span>
+          {product.type !== "STABILIZER" && (
+            <span className="text-muted-foreground">{product.tonnage} Ton</span>
+          )}
         </div>
         <div className="mt-2 flex items-baseline gap-2">
           <span className="text-base font-semibold text-deep">₹{product.price.toLocaleString("en-IN")}</span>

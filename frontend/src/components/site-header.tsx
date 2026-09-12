@@ -1,8 +1,9 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { Snowflake, ShoppingCart, Wrench, User, Menu, X, LogOut, ChevronDown, LayoutDashboard, Package, Ticket } from "lucide-react";
+import { Snowflake, ShoppingCart, Wrench, User, Menu, X, LogOut, ChevronDown, LayoutDashboard, Package, Ticket, Sun, Moon } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
+import { useTheme } from "@/lib/theme-context";
 
 const customerNavItems = [
   { to: "/", label: "Home", icon: Snowflake },
@@ -23,6 +24,7 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const [dropOpen, setDropOpen] = useState(false);
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const dropRef = useRef<HTMLDivElement>(null);
 
@@ -85,6 +87,13 @@ export function SiteHeader() {
 
         {/* Right side */}
         <div className="hidden md:flex items-center gap-2">
+          <button
+            onClick={toggleTheme}
+            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-secondary hover:text-foreground"
+          >
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </button>
           {user ? (
             <div className="relative" ref={dropRef}>
               <button
@@ -158,6 +167,14 @@ export function SiteHeader() {
                 {it.label}
               </Link>
             ))}
+            <div className="my-2 h-px bg-border" />
+            <button
+              onClick={toggleTheme}
+              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-secondary"
+            >
+              {theme === "dark" ? <Sun className="h-4 w-4 text-muted-foreground" /> : <Moon className="h-4 w-4 text-muted-foreground" />}
+              {theme === "dark" ? "Light mode" : "Dark mode"}
+            </button>
             <div className="my-2 h-px bg-border" />
             {user ? (
               <>
