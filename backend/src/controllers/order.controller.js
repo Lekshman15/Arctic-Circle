@@ -43,11 +43,22 @@ async function getAllOrders(req, res) {
 }
 
 async function markDelivered(req, res) {
+  const existing = await prisma.order.findUnique({
+    where: { id: req.params.id },
+  });
+
+  if (!existing) {
+    return res.status(404).json({
+      error: "Order not found.",
+    });
+  }
+
   const order = await prisma.order.update({
     where: { id: req.params.id },
     data: { status: "DELIVERED" },
     include: { user: true, product: true },
   });
+
   res.json(toOrderSummary(order));
 }
 
